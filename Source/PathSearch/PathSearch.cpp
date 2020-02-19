@@ -29,19 +29,41 @@ namespace ufl_cap4053 {
 				for (int row = 0; row < _tileMap->getRowCount(); row++) {
 					MapNode* node = tileMap.at(_tileMap->getTile(row, col));
 
-					// Create booleans to check boundaries of node
+					// Create booleans to check position of node against boundaries
 					bool topRow = row - 1 < 0;
-					bool bottomRow = row + 1 > _tileMap->getRowCount();
-					bool leftColumn = col - 1 < 0;
-					bool rightColumn = col + 1 > _tileMap->getColumnCount();
+					bool bottomRow = row + 1 >= _tileMap->getRowCount();
+					bool leftmostColumn = col - 1 < 0;
+					bool rightmostColumn = col + 1 >= _tileMap->getColumnCount();
 
-					// Even row nodes have a unique criteria for calculating edges
+					// Even row nodes (cyan) have a unique criteria for calculating edges
 					if (row % 2 == 0) {
-						// do magenta evaluation
+						if (!topRow)					   // North
+							node->addEdge(tileMap.at(_tileMap->getTile(row - 1, col)));
+						if (!topRow && !leftmostColumn)    // Northwest
+							node->addEdge(tileMap.at(_tileMap->getTile(row - 1, col - 1)));
+						if (!leftmostColumn)			   // West
+							node->addEdge(tileMap.at(_tileMap->getTile(row, col - 1)));
+						if (!leftmostColumn && !bottomRow) // Southwest
+							node->addEdge(tileMap.at(_tileMap->getTile(row + 1, col - 1)));
+						if (!bottomRow)					   // South
+							node->addEdge(tileMap.at(_tileMap->getTile(row + 1, col)));
+						if (!rightmostColumn)			   // East
+							node->addEdge(tileMap.at(_tileMap->getTile(row, col + 1)));
 					} 
-					// ..as do odd row nodes
+					// ..as do odd row nodes (magenta)
 					else {
-						// do purple evaluation
+						if (!topRow)						// North
+							node->addEdge(tileMap.at(_tileMap->getTile(row - 1, col)));
+						if (!topRow && !rightmostColumn)	// Northeast
+							node->addEdge(tileMap.at(_tileMap->getTile(row - 1, col + 1)));
+						if (!rightmostColumn)				// East
+							node->addEdge(tileMap.at(_tileMap->getTile(row, col + 1)));
+						if (!rightmostColumn && !bottomRow) // Southeast
+							node->addEdge(tileMap.at(_tileMap->getTile(row + 1, col + 1)));
+						if (!bottomRow)						// South
+							node->addEdge(tileMap.at(_tileMap->getTile(row + 1, col)));
+						if (!leftmostColumn)				// West
+							node->addEdge(tileMap.at(_tileMap->getTile(row, col - 1)));
 					}
 				}
 			}
@@ -50,7 +72,7 @@ namespace ufl_cap4053 {
 		// Called before any update of the path planner; should prepare for search to be performed between the tiles at
 		// the coordinates indicated.
 		void PathSearch::initialize(int startRow, int startCol, int goalRow, int goalCol) {
-		
+			
 		}
 
 		// Called to allow the path planner to execute for the specified timeslice (in milliseconds). Within this method 
