@@ -8,56 +8,26 @@ using namespace std;
 
 namespace ufl_cap4053 {
 	namespace searches {
-		class MapNode {
-		public:
+		struct MapNode {
 			// Constructor(s) & Destructor
 			MapNode(Tile* vertex) {
 				this->vertex = vertex;
 				parent = nullptr;
 			}
 
-			MapNode(Tile* vertex, MapNode* parent) {
-				this->vertex = vertex;
-				this->parent = parent;
-			}
-
 			~MapNode() {
 				parent = nullptr;
 				edges.clear();
 			}
-
-			// Getters & Setters
-			Tile* getVertex() { return vertex; }
-
-			unordered_map<MapNode*, int> getEdges() { return edges; }
 			
-			void setEdges(unordered_map<MapNode*, int> edges) {
-				this->edges = edges;
-			}
-
-			void setParent(MapNode* parent) { this->parent = parent; }
-
-			// Public Functions
 			void addEdge(MapNode* edge) {
-				int cost = calculateCost(this, edge);
-				edges.emplace(edge, cost);
+				if (edge->vertex->getWeight() > 0) edges.push_back(edge);
 			}
 
-		private:
 			// Class Variables
-			int x, y;
-			unordered_map<MapNode*, int> edges;
 			Tile* vertex;
 			MapNode* parent;
-
-			// Helper Functions
-			int calculateCost(MapNode* node, MapNode* edge) {
-				int nodeX = node->getVertex()->getRow();
-				int nodeY = node->getVertex()->getColumn();
-				int edgeX = edge->getVertex()->getRow();
-				int edgeY = edge->getVertex()->getColumn();
-				return (int)edge->getVertex()->getWeight();
-			}
+			vector<MapNode *> edges;
 		};
 
 		class PathSearch {
@@ -75,7 +45,7 @@ namespace ufl_cap4053 {
 		private:
 			TileMap* tileMap;
 			unordered_map<Tile const*, MapNode*> nodeMap;
-			priority_queue<MapNode*> open;
+			queue<MapNode*> open; // Change to priority queue eventually (fixed BFS)
 			unordered_map<Tile const*, MapNode*> visited;
 			MapNode* start;
 			MapNode* goal;

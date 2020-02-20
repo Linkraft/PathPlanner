@@ -41,35 +41,34 @@ namespace ufl_cap4053 {
 					// Even row nodes (cyan) have a unique criteria for calculating edges
 					if (row % 2 == 0) {
 						if (!topRow)					   // North
-							if (tileMap->getTile(row - 1, col)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col)));
 						if (!topRow && !leftmostColumn)    // Northwest
-							if (tileMap->getTile(row - 1, col- 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col - 1)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col - 1)));
 						if (!leftmostColumn)			   // West
-							if (tileMap->getTile(row, col - 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
 						if (!leftmostColumn && !bottomRow) // Southwest
-							if (tileMap->getTile(row + 1, col - 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col - 1)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col - 1)));
 						if (!bottomRow)					   // South
-							if (tileMap->getTile(row + 1, col)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col)));
 						if (!rightmostColumn)			   // East
-							if (tileMap->getTile(row, col + 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row, col + 1)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row, col + 1)));
 					} 
 					// ..as do odd row nodes (magenta)
 					else {
 						if (!topRow)						// North
-							if (tileMap->getTile(row - 1, col)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col)));
 						if (!topRow && !rightmostColumn)	// Northeast
-							if (tileMap->getTile(row - 1, col + 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col + 1)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col + 1)));
 						if (!rightmostColumn)				// East
-							if (tileMap->getTile(row, col + 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row, col + 1)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row, col + 1)));
 						if (!rightmostColumn && !bottomRow) // Southeast
-							if (tileMap->getTile(row + 1, col + 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col + 1)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col + 1)));
 						if (!bottomRow)						// South
-							if (tileMap->getTile(row + 1, col)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col)));
 						if (!leftmostColumn)				// West
-							if (tileMap->getTile(row, col- 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
+							node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
 					}
-					//cout << "Edge count for (" << node->getVertex()->getColumn() << ", " << node->getVertex()->getRow() << "): " << node->getEdges().size() << endl;
-					//for (std::pair<MapNode*, int> edge : node->getEdges()) cout << "   Edge: (" << edge.first->getVertex()->getColumn() << ", " << edge.first->getVertex()->getRow() << ")" << endl;
+					cout << col << ", " << row << endl;
 				}
 			}
 		}
@@ -77,55 +76,52 @@ namespace ufl_cap4053 {
 		// Called before any update of the path planner; should prepare for search to be performed between the tiles at
 		// the coordinates indicated.
 		void PathSearch::initialize(int startRow, int startCol, int goalRow, int goalCol) {
+			done = false;
 			start = nodeMap.at(tileMap->getTile(startRow, startCol));
 			goal = nodeMap.at(tileMap->getTile(goalRow, goalCol));
 			open.push(start);
-			visited.emplace(tileMap->getTile(goalRow, goalCol), start);
+			visited[start->vertex] = start;
 		}
 
 		// Called to allow the path planner to execute for the specified timeslice (in milliseconds). Within this method 
 		// the search should be performed until the time expires or the solution is found. If timeslice is zero (0), this 
 		// method should only do a single iteration of the algorithm. Otherwise the update should only iterate for the 
 		// indicated number of milliseconds.
-		void PathSearch::update(long _timeslice) { // c_time
+		void PathSearch::update(long _timeslice) {
+			// Initialize timer variables
 			milliseconds timeslice = milliseconds((long long)_timeslice);
 			high_resolution_clock::time_point start = high_resolution_clock::now();
 			duration<double, std::milli> elapsedTime = milliseconds(0);
 
-			cout << "Timeslice: " << timeslice.count() << endl;
 			while (open.size() != 0) {
-				MapNode* current = open.top();
+				// Get the top MapNode from the pqueue
+				MapNode* current = open.front();
 				open.pop();
-				current->getVertex()->setFill(0);
-				cout << "Current coordinates: (" << current->getVertex()->getColumn() << ", " << current->getVertex()->getRow() << ")" << endl;
-				//cout << "Number of edges: " << current->getEdges().size() << endl;
 
-				if (current->getVertex() == goal->getVertex()) {
-					cout << "-=-=-=-=-=-=-=-=-=- GOAL FOUND! -=-=-=-=-=-=-=-=-=-" << endl;
+				// Mark it for debugging and display its coordinates
+				current->vertex->setFill(0xFF7F0000);
+
+				// Check if the current MapNode is the goal MapNode
+				if (current == goal) {
 					done = true;
 					return;
 				}
 
-				unordered_map<MapNode*, int> edges = current->getEdges();
-
-				for (auto edge = edges.begin(); edge != edges.end(); ++edge) {
-					MapNode* successor = edge->first;
-					//cout << "   Edge of current: (" << successor->getVertex()->getColumn() << ", " << successor->getVertex()->getRow() << ")" << endl;
-					if (visited.find(successor->getVertex()) == visited.end()) {
-						MapNode* newNode = new MapNode(successor->getVertex(), current);
-						newNode->setEdges(successor->getEdges());
-						visited[successor->getVertex()] = newNode;
-						open.push(newNode);
-						//cout << "Open queue size: " << open.size() << endl;
+				// Place all of the current MapNode's unvisited edge MapNodes into the queue
+				for (MapNode* edge : current->edges) {
+					Tile* successor = edge->vertex;				    // Get the vertex for ease of lookup in visited map
+					if (visited.find(successor) == visited.end()) { // If we haven't visited this MapNode before
+						edge->parent = current;						// Update this edge MapNode's parent to be the current node
+						visited[successor] = edge;					// Mark this edge MapNode as visited
+						open.push(edge);							// Place it in the queue for later iterations
 					}
 				}
 
+				// Update time and check if we should stop
 				elapsedTime = high_resolution_clock::now() - start;
-				//cout << "Elapsed Time: " << elapsedTime.count() << endl;
-				if (elapsedTime.count() < timeslice.count()) {
-					cout << "-=-=-=-=-=-=-=-=-=- TIME'S UP! -=-=-=-=-=-=-=-=-=-" << endl;
-					return;
-				}
+				if (timeslice.count() == 0) break;
+				else if (elapsedTime.count() >= timeslice.count()) return;
+				else cout << "Elapsed time: " << elapsedTime.count() << " (ms)" << " / " << timeslice.count() << endl;
 			}
 		}
 
@@ -133,6 +129,7 @@ namespace ufl_cap4053 {
 		// search. Note that this is not the same as the destructor, as the search object may be reset to perform another 
 		// search on the same map.
 		void PathSearch::shutdown() {
+			for (std::pair<Tile const*, MapNode*> visit : visited) visit.second->parent = nullptr;
 			while (!open.empty()) open.pop();
 			visited.clear();
 		}
@@ -140,6 +137,7 @@ namespace ufl_cap4053 {
 		// Called when the tile map is unloaded.It should clean up any memory allocated for this tile map.Note that
 		// this is not the same as the destructor, as the search object may be reinitialized with a new map.
 		void PathSearch::unload() {
+			for (std::pair<Tile const*, MapNode*> mapping : nodeMap) delete mapping.second;
 			nodeMap.clear();
 		}
 
@@ -151,7 +149,12 @@ namespace ufl_cap4053 {
 		// Return a vector containing the solution path as an ordered series of Tile pointers from finish to start.
 		vector<Tile const*> const PathSearch::getSolution() const {
 			vector<Tile const*> finalPath;
-			
+			MapNode* curr = goal;
+			finalPath.push_back(goal->vertex);
+			while (curr->parent != nullptr) {
+				finalPath.push_back(curr->parent->vertex);
+				curr = curr->parent;
+			}
 			return finalPath;
 		}
 
