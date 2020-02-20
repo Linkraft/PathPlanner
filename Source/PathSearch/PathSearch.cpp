@@ -151,7 +151,7 @@ namespace ufl_cap4053 {
 		// Return a vector containing the solution path as an ordered series of Tile pointers from finish to start.
 		vector<Tile const*> const PathSearch::getSolution() const {
 			vector<Tile const*> finalPath;
-
+			
 			return finalPath;
 		}
 
