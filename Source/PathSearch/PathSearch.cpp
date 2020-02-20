@@ -41,33 +41,35 @@ namespace ufl_cap4053 {
 					// Even row nodes (cyan) have a unique criteria for calculating edges
 					if (row % 2 == 0) {
 						if (!topRow)					   // North
-							node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col)));
+							if (tileMap->getTile(row - 1, col)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col)));
 						if (!topRow && !leftmostColumn)    // Northwest
-							node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col - 1)));
+							if (tileMap->getTile(row - 1, col- 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col - 1)));
 						if (!leftmostColumn)			   // West
-							node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
+							if (tileMap->getTile(row, col - 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
 						if (!leftmostColumn && !bottomRow) // Southwest
-							node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col - 1)));
+							if (tileMap->getTile(row + 1, col - 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col - 1)));
 						if (!bottomRow)					   // South
-							node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col)));
+							if (tileMap->getTile(row + 1, col)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col)));
 						if (!rightmostColumn)			   // East
-							node->addEdge(nodeMap.at(tileMap->getTile(row, col + 1)));
+							if (tileMap->getTile(row, col + 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row, col + 1)));
 					} 
 					// ..as do odd row nodes (magenta)
 					else {
 						if (!topRow)						// North
-							node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col)));
+							if (tileMap->getTile(row - 1, col)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col)));
 						if (!topRow && !rightmostColumn)	// Northeast
-							node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col + 1)));
+							if (tileMap->getTile(row - 1, col + 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row - 1, col + 1)));
 						if (!rightmostColumn)				// East
-							node->addEdge(nodeMap.at(tileMap->getTile(row, col + 1)));
+							if (tileMap->getTile(row, col + 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row, col + 1)));
 						if (!rightmostColumn && !bottomRow) // Southeast
-							node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col + 1)));
+							if (tileMap->getTile(row + 1, col + 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col + 1)));
 						if (!bottomRow)						// South
-							node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col)));
+							if (tileMap->getTile(row + 1, col)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row + 1, col)));
 						if (!leftmostColumn)				// West
-							node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
+							if (tileMap->getTile(row, col- 1)->getWeight() > 0) node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
 					}
+					//cout << "Edge count for (" << node->getVertex()->getColumn() << ", " << node->getVertex()->getRow() << "): " << node->getEdges().size() << endl;
+					//for (std::pair<MapNode*, int> edge : node->getEdges()) cout << "   Edge: (" << edge.first->getVertex()->getColumn() << ", " << edge.first->getVertex()->getRow() << ")" << endl;
 				}
 			}
 		}
@@ -85,15 +87,21 @@ namespace ufl_cap4053 {
 		// the search should be performed until the time expires or the solution is found. If timeslice is zero (0), this 
 		// method should only do a single iteration of the algorithm. Otherwise the update should only iterate for the 
 		// indicated number of milliseconds.
-		void PathSearch::update(long _timeslice) {
+		void PathSearch::update(long _timeslice) { // c_time
 			milliseconds timeslice = milliseconds((long long)_timeslice);
 			high_resolution_clock::time_point start = high_resolution_clock::now();
 			duration<double, std::milli> elapsedTime = milliseconds(0);
 
-			while (open.size() != 0 && elapsedTime.count() < timeslice.count()) {
+			cout << "Timeslice: " << timeslice.count() << endl;
+			while (open.size() != 0) {
 				MapNode* current = open.top();
+				open.pop();
+				current->getVertex()->setFill(0);
+				cout << "Current coordinates: (" << current->getVertex()->getColumn() << ", " << current->getVertex()->getRow() << ")" << endl;
+				//cout << "Number of edges: " << current->getEdges().size() << endl;
 
-				if (current == goal) {
+				if (current->getVertex() == goal->getVertex()) {
+					cout << "-=-=-=-=-=-=-=-=-=- GOAL FOUND! -=-=-=-=-=-=-=-=-=-" << endl;
 					done = true;
 					return;
 				}
@@ -101,16 +109,23 @@ namespace ufl_cap4053 {
 				unordered_map<MapNode*, int> edges = current->getEdges();
 
 				for (auto edge = edges.begin(); edge != edges.end(); ++edge) {
-					Tile* successor = edge->first->getVertex();
-
-					if (visited.find(successor) == visited.end()) {
-						MapNode* newNode = new MapNode(successor, current);
-						visited[successor] = newNode;
-						open.emplace(newNode);
+					MapNode* successor = edge->first;
+					//cout << "   Edge of current: (" << successor->getVertex()->getColumn() << ", " << successor->getVertex()->getRow() << ")" << endl;
+					if (visited.find(successor->getVertex()) == visited.end()) {
+						MapNode* newNode = new MapNode(successor->getVertex(), current);
+						newNode->setEdges(successor->getEdges());
+						visited[successor->getVertex()] = newNode;
+						open.push(newNode);
+						//cout << "Open queue size: " << open.size() << endl;
 					}
 				}
 
 				elapsedTime = high_resolution_clock::now() - start;
+				//cout << "Elapsed Time: " << elapsedTime.count() << endl;
+				if (elapsedTime.count() < timeslice.count()) {
+					cout << "-=-=-=-=-=-=-=-=-=- TIME'S UP! -=-=-=-=-=-=-=-=-=-" << endl;
+					return;
+				}
 			}
 		}
 
@@ -136,6 +151,7 @@ namespace ufl_cap4053 {
 		// Return a vector containing the solution path as an ordered series of Tile pointers from finish to start.
 		vector<Tile const*> const PathSearch::getSolution() const {
 			vector<Tile const*> finalPath;
+
 			return finalPath;
 		}
 

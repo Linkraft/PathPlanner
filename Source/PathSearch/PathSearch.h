@@ -1,7 +1,8 @@
 #include "../platform.h" // This file will make exporting DLL symbols simpler for students.
 #include "../Framework/TileSystem/TileMap.h"
-#include <vector>
 #include <queue>
+#include <vector>
+#include <iostream>
 #include <unordered_map>
 using namespace std;
 
@@ -30,6 +31,10 @@ namespace ufl_cap4053 {
 
 			unordered_map<MapNode*, int> getEdges() { return edges; }
 			
+			void setEdges(unordered_map<MapNode*, int> edges) {
+				this->edges = edges;
+			}
+
 			void setParent(MapNode* parent) { this->parent = parent; }
 
 			// Public Functions
@@ -51,7 +56,7 @@ namespace ufl_cap4053 {
 				int nodeY = node->getVertex()->getColumn();
 				int edgeX = edge->getVertex()->getRow();
 				int edgeY = edge->getVertex()->getColumn();
-				return 0;
+				return (int)edge->getVertex()->getWeight();
 			}
 		};
 
