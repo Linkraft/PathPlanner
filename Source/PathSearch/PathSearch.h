@@ -1,6 +1,7 @@
 #include "../platform.h" // This file will make exporting DLL symbols simpler for students.
 #include "../Framework/TileSystem/TileMap.h"
 #include <vector>
+#include <queue>
 #include <unordered_map>
 using namespace std;
 
@@ -9,10 +10,14 @@ namespace ufl_cap4053 {
 		class MapNode {
 		public:
 			// Constructor(s) & Destructor
-			MapNode(Tile* tile) {
-				x = tile->getColumn();
-				y = tile->getRow();
+			MapNode(Tile* vertex) {
+				this->vertex = vertex;
 				parent = nullptr;
+			}
+
+			MapNode(Tile* vertex, MapNode* parent) {
+				this->vertex = vertex;
+				this->parent = parent;
 			}
 
 			~MapNode() {
@@ -21,9 +26,9 @@ namespace ufl_cap4053 {
 			}
 
 			// Getters & Setters
-			int getX() { return x; }
+			Tile* getVertex() { return vertex; }
 
-			int getY() { return y; }
+			unordered_map<MapNode*, int> getEdges() { return edges; }
 			
 			void setParent(MapNode* parent) { this->parent = parent; }
 
@@ -37,14 +42,16 @@ namespace ufl_cap4053 {
 			// Class Variables
 			int x, y;
 			unordered_map<MapNode*, int> edges;
+			Tile* vertex;
 			MapNode* parent;
 
 			// Helper Functions
 			int calculateCost(MapNode* node, MapNode* edge) {
-				int nodeX = node->getX();
-				int nodeY = node->getY();
-				int edgeX = edge->getX();
-				int edgeY = edge->getY();
+				int nodeX = node->getVertex()->getRow();
+				int nodeY = node->getVertex()->getColumn();
+				int edgeX = edge->getVertex()->getRow();
+				int edgeY = edge->getVertex()->getColumn();
+				return 0;
 			}
 		};
 
@@ -61,9 +68,13 @@ namespace ufl_cap4053 {
 			DLLEXPORT std::vector<Tile const*> const getSolution() const;
 
 		private:
-			DLLEXPORT bool areAdjacent(const Tile *lhs, const Tile* rhs);
-			unordered_map<Tile const*, MapNode*> tileMap;
-			int boundaryX, boundaryY;
+			TileMap* tileMap;
+			unordered_map<Tile const*, MapNode*> nodeMap;
+			priority_queue<MapNode*> open;
+			unordered_map<Tile const*, MapNode*> visited;
+			MapNode* start;
+			MapNode* goal;
+			bool done;
 		};
 
 	}
