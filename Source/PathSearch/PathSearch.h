@@ -11,6 +11,7 @@ namespace ufl_cap4053 {
 		struct MapNode {
 			// Constructor(s) & Destructor
 			MapNode(Tile* vertex) {
+				visited = false;
 				this->vertex = vertex;
 				parent = nullptr;
 			}
@@ -25,6 +26,7 @@ namespace ufl_cap4053 {
 			}
 
 			// Class Variables
+			bool visited;
 			Tile* vertex;
 			MapNode* parent;
 			vector<MapNode *> edges;
@@ -44,9 +46,11 @@ namespace ufl_cap4053 {
 
 		private:
 			TileMap* tileMap;
+			int numColumns;
+			int numRows;
 			unordered_map<Tile const*, MapNode*> nodeMap;
 			queue<MapNode*> open; // Change to priority queue eventually (fixed BFS)
-			unordered_map<Tile const*, MapNode*> visited;
+			//unordered_map<Tile const*, MapNode*> visited;
 			MapNode* start;
 			MapNode* goal;
 			bool done;

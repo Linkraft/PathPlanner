@@ -8,6 +8,9 @@ namespace ufl_cap4053 {
 
 		// The constructor; takes no arguments.
 		PathSearch::PathSearch() {
+			tileMap = nullptr;
+			start = nullptr;
+			goal = nullptr;
 			done = false;
 		}
 
@@ -20,23 +23,27 @@ namespace ufl_cap4053 {
 		// Called after the tile map is loaded. This is usually where the search graph is generated.
 		void PathSearch::load(TileMap* _tileMap) {
 			tileMap = _tileMap;
+			numColumns = tileMap->getColumnCount();
+			numRows = tileMap->getRowCount();
+
 			// First, add the tile locations into the search map
-			for (int col = 0; col < tileMap->getColumnCount(); col++) {
-				for (int row = 0; row < tileMap->getRowCount(); row++) {
+			for (int col = 0; col < numColumns; col++) {
+				for (int row = 0; row < numRows; row++) {
 					MapNode* node = new MapNode(tileMap->getTile(row, col));
 					nodeMap.emplace(tileMap->getTile(row, col), node);
 				}
 			}
+
 			// Then calculate the edges for all the search map nodes
-			for (int col = 0; col < tileMap->getColumnCount(); col++) {
-				for (int row = 0; row < tileMap->getRowCount(); row++) {
+			for (int col = 0; col < numColumns; col++) {
+				for (int row = 0; row < numRows; row++) {
 					MapNode* node = nodeMap.at(tileMap->getTile(row, col));
 
 					// Create booleans to check position of node against boundaries
 					bool topRow = row - 1 < 0;
-					bool bottomRow = row + 1 >= tileMap->getRowCount();
+					bool bottomRow = row + 1 >= numRows;
 					bool leftmostColumn = col - 1 < 0;
-					bool rightmostColumn = col + 1 >= tileMap->getColumnCount();
+					bool rightmostColumn = col + 1 >= numColumns;
 
 					// Even row nodes (cyan) have a unique criteria for calculating edges
 					if (row % 2 == 0) {
@@ -68,9 +75,9 @@ namespace ufl_cap4053 {
 						if (!leftmostColumn)				// West
 							node->addEdge(nodeMap.at(tileMap->getTile(row, col - 1)));
 					}
-					cout << col << ", " << row << endl;
 				}
 			}
+
 		}
 
 		// Called before any update of the path planner; should prepare for search to be performed between the tiles at
@@ -79,8 +86,8 @@ namespace ufl_cap4053 {
 			done = false;
 			start = nodeMap.at(tileMap->getTile(startRow, startCol));
 			goal = nodeMap.at(tileMap->getTile(goalRow, goalCol));
+			start->visited = true;
 			open.push(start);
-			visited[start->vertex] = start;
 		}
 
 		// Called to allow the path planner to execute for the specified timeslice (in milliseconds). Within this method 
@@ -91,7 +98,6 @@ namespace ufl_cap4053 {
 			// Initialize timer variables
 			milliseconds timeslice = milliseconds((long long)_timeslice);
 			high_resolution_clock::time_point start = high_resolution_clock::now();
-			duration<double, std::milli> elapsedTime = milliseconds(0);
 
 			while (open.size() != 0) {
 				// Get the top MapNode from the pqueue
@@ -109,19 +115,18 @@ namespace ufl_cap4053 {
 
 				// Place all of the current MapNode's unvisited edge MapNodes into the queue
 				for (MapNode* edge : current->edges) {
-					Tile* successor = edge->vertex;				    // Get the vertex for ease of lookup in visited map
-					if (visited.find(successor) == visited.end()) { // If we haven't visited this MapNode before
+					if (!edge->visited) {							// If we haven't visited this MapNode before
+						edge->visited = true;						// Mark MapNode as visited
 						edge->parent = current;						// Update this edge MapNode's parent to be the current node
-						visited[successor] = edge;					// Mark this edge MapNode as visited
 						open.push(edge);							// Place it in the queue for later iterations
 					}
 				}
 
 				// Update time and check if we should stop
-				elapsedTime = high_resolution_clock::now() - start;
+				duration<double, std::milli> elapsedTime = high_resolution_clock::now() - start;
+				cout << "Elapsed time: " << elapsedTime.count() << " (ms)" << " / " << timeslice.count() << endl;
 				if (timeslice.count() == 0) break;
 				else if (elapsedTime.count() >= timeslice.count()) return;
-				else cout << "Elapsed time: " << elapsedTime.count() << " (ms)" << " / " << timeslice.count() << endl;
 			}
 		}
 
@@ -129,9 +134,8 @@ namespace ufl_cap4053 {
 		// search. Note that this is not the same as the destructor, as the search object may be reset to perform another 
 		// search on the same map.
 		void PathSearch::shutdown() {
-			for (std::pair<Tile const*, MapNode*> visit : visited) visit.second->parent = nullptr;
+			//for (std::pair<Tile const*, MapNode*> mapping : nodeMap) mapping.second->parent = nullptr;
 			while (!open.empty()) open.pop();
-			visited.clear();
 		}
 
 		// Called when the tile map is unloaded.It should clean up any memory allocated for this tile map.Note that
@@ -149,12 +153,15 @@ namespace ufl_cap4053 {
 		// Return a vector containing the solution path as an ordered series of Tile pointers from finish to start.
 		vector<Tile const*> const PathSearch::getSolution() const {
 			vector<Tile const*> finalPath;
-			MapNode* curr = goal;
+			MapNode* current = goal;
 			finalPath.push_back(goal->vertex);
-			while (curr->parent != nullptr) {
-				finalPath.push_back(curr->parent->vertex);
-				curr = curr->parent;
+			while (current->parent != nullptr) {
+				cout << current->vertex->getRow() << ", " << current->vertex->getColumn() << endl;
+				finalPath.push_back(current->parent->vertex);
+				current = current->parent;
 			}
+			cout << current->vertex->getRow() << ", " << current->vertex->getColumn() << endl;
+			cout << "Final count: " << finalPath.size() << endl;
 			return finalPath;
 		}
 
