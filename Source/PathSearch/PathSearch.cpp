@@ -26,6 +26,7 @@ namespace ufl_cap4053 {
 			tileMap = _tileMap;
 			numColumns = tileMap->getColumnCount();
 			numRows = tileMap->getRowCount();
+			tileRadius = tileMap->getTileRadius();
 
 			// First, add the tile locations into the search map
 			for (int col = 0; col < numColumns; col++) {
@@ -88,7 +89,7 @@ namespace ufl_cap4053 {
 			start = nodeMap.at(tileMap->getTile(startRow, startCol));
 			goal = nodeMap.at(tileMap->getTile(goalRow, goalCol));
 			start->visited = true;
-			open.push(make_pair(start->heuristicCost(goal), start));
+			open.push(make_pair(0, start));
 		}
 
 
@@ -118,11 +119,21 @@ namespace ufl_cap4053 {
 
 				// Place all of the current MapNode's unvisited edge MapNodes into the queue
 				for (MapNode* edge : current->edges) {
-					if (!edge->visited) {								       // If we haven't visited this MapNode before
-						edge->visited = true;							       // Mark MapNode as visited
-						//edge->vertex->setFill(0xff2e00fa);				   // Fill the vertex with color to indicate edginess
-						edge->parent = current;							       // Update this edge MapNode's parent to be the current node
-						open.push(make_pair(edge->heuristicCost(goal), edge)); // Place it in the priority queue for later iterations
+					double edgeCost = (double)edge->terrainWeight * 2 * tileRadius; // Calculate edge cost
+					double newCost = current->givenCost + edgeCost;					// Calculate given cost for this edge
+					if (!edge->visited) {											// If we haven't visited this MapNode before
+						edge->visited = true;										// Mark MapNode as visited
+						//edge->vertex->setFill(0xff2e00fa);						// Fill the vertex with color to indicate edginess
+						edge->givenCost = newCost;									// Initialize the edge's givenCost
+						edge->parent = current;										// Update this edge MapNode's parent to be the current node
+						open.push(make_pair(newCost, edge));						// Place it in the priority queue for later iterations
+					}
+					else {															// Check if new path is better than old path
+						if (newCost < edge->givenCost) {							// Update edge and reinsert it into the queue
+							edge->givenCost = newCost;
+							edge->parent = current;
+ 							open.push(make_pair(newCost, edge));
+						}
 					}
 				}
 
@@ -135,13 +146,16 @@ namespace ufl_cap4053 {
 		// search. Note that this is not the same as the destructor, as the search object may be reset to perform another 
 		// search on the same map.
 		void PathSearch::shutdown() {
-			for (std::pair<Tile const*, MapNode*> mapping : nodeMap) mapping.second->parent = nullptr;
+			for (std::pair<Tile const*, MapNode*> mapping : nodeMap) mapping.second->reset();
 			while (!open.empty()) open.pop();
+			start = nullptr;
+			goal = nullptr;
 		}
 
 		// Called when the tile map is unloaded.It should clean up any memory allocated for this tile map.Note that
 		// this is not the same as the destructor, as the search object may be reinitialized with a new map.
 		void PathSearch::unload() {
+			shutdown();
 			for (std::pair<Tile const*, MapNode*> mapping : nodeMap) delete mapping.second;
 			nodeMap.clear();
 		}
