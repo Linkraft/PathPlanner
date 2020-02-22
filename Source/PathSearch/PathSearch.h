@@ -30,6 +30,13 @@ namespace ufl_cap4053 {
 				if (edge->terrainWeight > 0) edges.push_back(edge);
 			}
 
+			double heuristicCost(MapNode* goal) {
+				// Calculate straight line distance
+				double goalX = goal->vertex->getXCoordinate();
+				double goalY = goal->vertex->getYCoordinate();
+				return sqrt(pow(goalX - x, 2) + pow(goalY - y, 2));
+			}
+
 			// Class Variables
 			int row;
 			int col;
@@ -59,7 +66,7 @@ namespace ufl_cap4053 {
 			int numColumns;
 			int numRows;
 			unordered_map<Tile const*, MapNode*> nodeMap;
-			priority_queue<pair<double, MapNode*>, vector<pair<double, MapNode*>, std::greater<pair<double, MapNode*>>>> open;
+			priority_queue<pair<double, MapNode*>, vector<pair<double, MapNode*>>, greater<pair<double, MapNode*>>> open;
 			MapNode* start; 
 			MapNode* goal;
 			bool done;

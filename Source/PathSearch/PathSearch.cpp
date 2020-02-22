@@ -88,7 +88,7 @@ namespace ufl_cap4053 {
 			start = nodeMap.at(tileMap->getTile(startRow, startCol));
 			goal = nodeMap.at(tileMap->getTile(goalRow, goalCol));
 			start->visited = true;
-			open.push();
+			open.push(make_pair(start->heuristicCost(goal), start));
 		}
 
 
@@ -104,7 +104,7 @@ namespace ufl_cap4053 {
 
 			while (elapsedTime.count() <= timeslice.count()) {
 				// Get the top MapNode from the pqueue
-				MapNode* current = open.front();
+				MapNode* current = open.top().second;
 				open.pop();
 
 				// Mark it for debugging and display its coordinates
@@ -118,11 +118,11 @@ namespace ufl_cap4053 {
 
 				// Place all of the current MapNode's unvisited edge MapNodes into the queue
 				for (MapNode* edge : current->edges) {
-					if (!edge->visited) {							// If we haven't visited this MapNode before
-						edge->visited = true;						// Mark MapNode as visited
-						edge->vertex->setFill(0xff2e00fa);
-						edge->parent = current;						// Update this edge MapNode's parent to be the current node
-						open.push(edge);							// Place it in the queue for later iterations
+					if (!edge->visited) {								       // If we haven't visited this MapNode before
+						edge->visited = true;							       // Mark MapNode as visited
+						//edge->vertex->setFill(0xff2e00fa);				   // Fill the vertex with color to indicate edginess
+						edge->parent = current;							       // Update this edge MapNode's parent to be the current node
+						open.push(make_pair(edge->heuristicCost(goal), edge)); // Place it in the priority queue for later iterations
 					}
 				}
 
