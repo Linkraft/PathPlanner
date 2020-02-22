@@ -59,7 +59,7 @@ namespace ufl_cap4053 {
 			int numColumns;
 			int numRows;
 			unordered_map<Tile const*, MapNode*> nodeMap;
-			queue<MapNode*> open; // Change to priority queue eventually (fixed BFS)
+			priority_queue<pair<double, MapNode*>, vector<pair<double, MapNode*>, std::greater<pair<double, MapNode*>>>> open;
 			MapNode* start;
 			MapNode* goal;
 			bool done;

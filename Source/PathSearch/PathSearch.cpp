@@ -88,7 +88,7 @@ namespace ufl_cap4053 {
 			start = nodeMap.at(tileMap->getTile(startRow, startCol));
 			goal = nodeMap.at(tileMap->getTile(goalRow, goalCol));
 			start->visited = true;
-			open.push(start);
+			open.push();
 		}
 
 
