@@ -9,6 +9,8 @@ namespace ufl_cap4053 {
 		PathSearch::PathSearch() {
 			numColumns = 0;
 			numRows = 0;
+			tileRadius = 0;
+			heuristicWeight = 1.2;
 			tileMap = nullptr;
 			start = nullptr;
 			goal = nullptr;
@@ -119,20 +121,23 @@ namespace ufl_cap4053 {
 
 				// Place all of the current MapNode's unvisited edge MapNodes into the queue
 				for (MapNode* edge : current->edges) {
-					double edgeCost = (double)edge->terrainWeight * 2 * tileRadius; // Calculate edge cost
-					double newCost = current->givenCost + edgeCost;					// Calculate given cost for this edge
-					if (!edge->visited) {											// If we haven't visited this MapNode before
-						edge->visited = true;										// Mark MapNode as visited
-						//edge->vertex->setFill(0xff2e00fa);						// Fill the vertex with color to indicate edginess
-						edge->givenCost = newCost;									// Initialize the edge's givenCost
-						edge->parent = current;										// Update this edge MapNode's parent to be the current node
-						open.push(make_pair(newCost, edge));						// Place it in the priority queue for later iterations
+					double edgeCost = (double)edge->terrainWeight * 2 * tileRadius;						 // Calculate edge cost
+					double newCost = current->givenCost + edgeCost;										 // Calculate given cost for this edge
+					if (!edge->visited) {																 // If we haven't visited this MapNode before
+						edge->visited = true;															 // Mark MapNode as visited
+						//edge->vertex->setFill(0xff2e00fa);											 // Fill the vertex with color to indicate edginess
+						edge->givenCost = newCost;														 // Initialize the edge's givenCost
+						edge->heuristicCost = edge->getHeuristicCost(goal);								 // Initialize edge with its unchanging heuristic cost
+						edge->finalCost = edge->givenCost + (edge->heuristicCost * heuristicWeight);	 // Calculate the final cost of the edge
+						edge->parent = current;															 // Update this edge MapNode's parent to be the current node
+						open.push(make_pair(edge->finalCost, edge));									 // Place it in the priority queue for later iterations
 					}
-					else {															// Check if new path is better than old path
-						if (newCost < edge->givenCost) {							// Update edge and reinsert it into the queue
+					else {																				 // Check if new path is better than old path
+						if (newCost < edge->givenCost) {												 // Update edge and reinsert it into the queue
 							edge->givenCost = newCost;
+							edge->finalCost = edge->givenCost + (edge->heuristicCost * heuristicWeight); // Recalculate the final cost of the edge
 							edge->parent = current;
- 							open.push(make_pair(newCost, edge));
+ 							open.push(make_pair(edge->finalCost, edge));
 						}
 					}
 				}
@@ -148,8 +153,6 @@ namespace ufl_cap4053 {
 		void PathSearch::shutdown() {
 			for (std::pair<Tile const*, MapNode*> mapping : nodeMap) mapping.second->reset();
 			while (!open.empty()) open.pop();
-			start = nullptr;
-			goal = nullptr;
 		}
 
 		// Called when the tile map is unloaded.It should clean up any memory allocated for this tile map.Note that

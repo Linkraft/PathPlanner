@@ -16,6 +16,7 @@ namespace ufl_cap4053 {
 				x = vertex->getXCoordinate();
 				y = vertex->getYCoordinate();
 				givenCost = 0;
+				heuristicCost = 0;
 				terrainWeight = vertex->getWeight();
 				visited = false;
 				this->vertex = vertex;
@@ -36,12 +37,12 @@ namespace ufl_cap4053 {
 				visited = false;
 			}
 
-			//double heuristicCost(MapNode* goal) {
-			//	// Calculate straight line distance
-			//	double goalX = goal->vertex->getXCoordinate();
-			//	double goalY = goal->vertex->getYCoordinate();
-			//	return sqrt(pow(goalX - x, 2) + pow(goalY - y, 2));
-			//}
+			double getHeuristicCost(MapNode* goal) {
+				// Calculate straight line distance
+				double goalX = goal->vertex->getXCoordinate();
+				double goalY = goal->vertex->getYCoordinate();
+				return sqrt(pow(goalX - x, 2) + pow(goalY - y, 2));
+			}
 
 			// Class Variables
 			int row;
@@ -49,6 +50,8 @@ namespace ufl_cap4053 {
 			double x;
 			double y;
 			double givenCost;
+			double heuristicCost;
+			double finalCost;
 			int terrainWeight;
 			bool visited;
 			Tile* vertex;
@@ -73,6 +76,7 @@ namespace ufl_cap4053 {
 			int numColumns;
 			int numRows;
 			double tileRadius;
+			double heuristicWeight;
 			unordered_map<Tile const*, MapNode*> nodeMap;
 			priority_queue<pair<double, MapNode*>, vector<pair<double, MapNode*>>, greater<pair<double, MapNode*>>> open;
 			MapNode* start; 
