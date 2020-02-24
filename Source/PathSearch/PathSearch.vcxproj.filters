@@ -6,5 +6,9 @@
   <ItemGroup>
     <ClInclude Include="PathSearch.h" />
     <ClInclude Include="..\PriorityQueue.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PathSearch.rc" />
   </ItemGroup>
 </Project>

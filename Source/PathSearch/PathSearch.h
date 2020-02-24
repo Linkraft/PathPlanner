@@ -2,13 +2,13 @@
 #include "../Framework/TileSystem/TileMap.h"
 #include <queue>
 #include <vector>
-#include <iostream>
 #include <unordered_map>
 using namespace std;
 
 namespace ufl_cap4053 {
 	namespace searches {
 		struct MapNode {
+
 			// Constructor(s) & Destructor
 			MapNode(Tile* vertex) {
 				row = vertex->getRow();
@@ -17,6 +17,7 @@ namespace ufl_cap4053 {
 				y = vertex->getYCoordinate();
 				givenCost = 0;
 				heuristicCost = 0;
+				finalCost = 0;
 				terrainWeight = vertex->getWeight();
 				visited = false;
 				this->vertex = vertex;
@@ -24,12 +25,15 @@ namespace ufl_cap4053 {
 			}
 
 			~MapNode() {
-				parent = nullptr;
+				reset();
+				vertex = nullptr;
+				while (!edges.empty()) edges.pop_back();
 				edges.clear();
 			}
 			
 			void addEdge(MapNode* edge) {
-				if (edge->terrainWeight > 0) edges.push_back(edge);
+				if (edge->terrainWeight > 0) 
+					edges.push_back(edge);
 			}
 
 			void reset() {

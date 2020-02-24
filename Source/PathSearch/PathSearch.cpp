@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <iostream>
 #include "PathSearch.h"
 using namespace std::chrono;
 
@@ -125,7 +126,6 @@ namespace ufl_cap4053 {
 					double newCost = current->givenCost + edgeCost;										 // Calculate given cost for this edge
 					if (!edge->visited) {																 // If we haven't visited this MapNode before
 						edge->visited = true;															 // Mark MapNode as visited
-						//edge->vertex->setFill(0xff2e00fa);											 // Fill the vertex with color to indicate edginess
 						edge->givenCost = newCost;														 // Initialize the edge's givenCost
 						edge->heuristicCost = edge->getHeuristicCost(goal);								 // Initialize edge with its unchanging heuristic cost
 						edge->finalCost = edge->givenCost + (edge->heuristicCost * heuristicWeight);	 // Calculate the final cost of the edge

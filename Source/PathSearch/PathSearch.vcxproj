@@ -130,11 +130,15 @@
   <ItemGroup>
     <ClInclude Include="..\PriorityQueue.h" />
     <ClInclude Include="PathSearch.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Framework\TileSystem\TileSystem.vcxproj">
       <Project>{149a8182-9f2a-433f-a23a-b9d4b5a7a37b}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PathSearch.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
