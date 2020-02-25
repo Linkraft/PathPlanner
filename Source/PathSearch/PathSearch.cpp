@@ -5,9 +5,10 @@ using namespace std::chrono;
 
 namespace ufl_cap4053 {
 	namespace searches {
-
 		// The constructor; takes no arguments.
 		PathSearch::PathSearch() {
+			numColumns = 0;
+			numRows = 0;
 			tileMap = nullptr;
 			start = nullptr;
 			goal = nullptr;
@@ -90,6 +91,7 @@ namespace ufl_cap4053 {
 			open.push(start);
 		}
 
+
 		// Called to allow the path planner to execute for the specified timeslice (in milliseconds). Within this method 
 		// the search should be performed until the time expires or the solution is found. If timeslice is zero (0), this 
 		// method should only do a single iteration of the algorithm. Otherwise the update should only iterate for the 
@@ -98,8 +100,9 @@ namespace ufl_cap4053 {
 			// Initialize timer variables
 			milliseconds timeslice = milliseconds((long long)_timeslice);
 			high_resolution_clock::time_point start = high_resolution_clock::now();
+			duration<double, std::milli> elapsedTime(0);
 
-			while (open.size() != 0) {
+			while (elapsedTime.count() <= timeslice.count()) {
 				// Get the top MapNode from the pqueue
 				MapNode* current = open.front();
 				open.pop();
@@ -117,16 +120,14 @@ namespace ufl_cap4053 {
 				for (MapNode* edge : current->edges) {
 					if (!edge->visited) {							// If we haven't visited this MapNode before
 						edge->visited = true;						// Mark MapNode as visited
+						edge->vertex->setFill(0xff2e00fa);
 						edge->parent = current;						// Update this edge MapNode's parent to be the current node
 						open.push(edge);							// Place it in the queue for later iterations
 					}
 				}
 
 				// Update time and check if we should stop
-				duration<double, std::milli> elapsedTime = high_resolution_clock::now() - start;
-				cout << "Elapsed time: " << elapsedTime.count() << " (ms)" << " / " << timeslice.count() << endl;
-				if (timeslice.count() == 0) break;
-				else if (elapsedTime.count() >= timeslice.count()) return;
+				elapsedTime = high_resolution_clock::now() - start;
 			}
 		}
 
@@ -134,7 +135,7 @@ namespace ufl_cap4053 {
 		// search. Note that this is not the same as the destructor, as the search object may be reset to perform another 
 		// search on the same map.
 		void PathSearch::shutdown() {
-			//for (std::pair<Tile const*, MapNode*> mapping : nodeMap) mapping.second->parent = nullptr;
+			for (std::pair<Tile const*, MapNode*> mapping : nodeMap) mapping.second->parent = nullptr;
 			while (!open.empty()) open.pop();
 		}
 
@@ -156,14 +157,10 @@ namespace ufl_cap4053 {
 			MapNode* current = goal;
 			finalPath.push_back(goal->vertex);
 			while (current->parent != nullptr) {
-				cout << current->vertex->getRow() << ", " << current->vertex->getColumn() << endl;
 				finalPath.push_back(current->parent->vertex);
 				current = current->parent;
 			}
-			cout << current->vertex->getRow() << ", " << current->vertex->getColumn() << endl;
-			cout << "Final count: " << finalPath.size() << endl;
 			return finalPath;
 		}
-
 	}
 }

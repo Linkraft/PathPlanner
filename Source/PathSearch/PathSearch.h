@@ -11,6 +11,11 @@ namespace ufl_cap4053 {
 		struct MapNode {
 			// Constructor(s) & Destructor
 			MapNode(Tile* vertex) {
+				row = vertex->getRow();
+				col = vertex->getColumn();
+				x = vertex->getXCoordinate();
+				y = vertex->getYCoordinate();
+				terrainWeight = vertex->getWeight();
 				visited = false;
 				this->vertex = vertex;
 				parent = nullptr;
@@ -22,10 +27,15 @@ namespace ufl_cap4053 {
 			}
 			
 			void addEdge(MapNode* edge) {
-				if (edge->vertex->getWeight() > 0) edges.push_back(edge);
+				if (edge->terrainWeight > 0) edges.push_back(edge);
 			}
 
 			// Class Variables
+			int row;
+			int col;
+			double x;
+			double y;
+			int terrainWeight;
 			bool visited;
 			Tile* vertex;
 			MapNode* parent;
@@ -50,11 +60,9 @@ namespace ufl_cap4053 {
 			int numRows;
 			unordered_map<Tile const*, MapNode*> nodeMap;
 			queue<MapNode*> open; // Change to priority queue eventually (fixed BFS)
-			//unordered_map<Tile const*, MapNode*> visited;
 			MapNode* start;
 			MapNode* goal;
 			bool done;
 		};
-
 	}
 }  // close namespace ufl_cap4053::searches
