@@ -10,6 +10,7 @@ There are were a total of four different algorithms that were made as a part of 
 - Greedy Breadth-First Search (a.k.a. Best-First Search)
 - Uniform Cost Search
 - A* Search
+
 The development of the algorithms was an iterative process, as all algorithms build off of BFS so only minor modifications are necessary for implementing the other algorithms.
 
 ## Documentation & More Information
