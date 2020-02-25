@@ -16,3 +16,6 @@ The development of the algorithms was an iterative process, as all algorithms bu
 Please refer to the 'Manual - Path Planner' PDF for information regarding the documentation around the API calls used.
 
 This project took around 6-8 hours to complete, and was completed on February 23rd, 2020.
+
+## Acknowledgements
+Please note that the original codebase is not mine; it was created by my professor Jeremiah Blanchard for Full Sail University and University of Florida courses.
