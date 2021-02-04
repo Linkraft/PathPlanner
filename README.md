@@ -1,15 +1,15 @@
 # Path Planner
-**Path Planner** is a AI-based path planner program that I worked on during my AI for Games class at the University of Florida. All work done was in the PathSearch class files, where the program's AI algorithms were implemented.
+**Path Planner** is an AI-based path planner program that I worked on during my AI for Games class at the University of Florida. All work done was in the PathSearch class files, where the program's AI algorithms were implemented.
 
 ## Usage
 Open the project in Visual Studio Enterprise 2019 and navigate to the PathPlannerApp's code file. Then select 'Project' -> 'Set as Startup Project' to get the program to build correctly. Ctrl + F5 to start the program!
 
 ## Algorithms
 There are were a total of four different algorithms that were made as a part of this project. They are (in order of complexity):
-- Breadth-First Search (BFS)
-- Greedy Breadth-First Search (a.k.a. Best-First Search)
-- Uniform Cost Search
-- A* Search
+- [Breadth-First Search (BFS)](https://en.wikipedia.org/wiki/Breadth-first_search)
+- Greedy Breadth-First Search (a.k.a. [Best-First Search](https://en.wikipedia.org/wiki/Best-first_search))
+- [Uniform Cost Search](https://www.geeksforgeeks.org/uniform-cost-search-dijkstra-for-large-graphs/)
+- [A* Search](https://en.wikipedia.org/wiki/A*_search_algorithm)
 
 The development of the algorithms was an iterative process, as all algorithms build off of BFS so only minor modifications are necessary for implementing the other algorithms.
 
